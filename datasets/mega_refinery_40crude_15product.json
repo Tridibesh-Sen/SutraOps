@@ -1,0 +1,379 @@
+{
+  "problem": "refinery_blend",
+  "name": "jamnagar_petrochemical_mega_complex_40x15",
+  "is_large_scale": true,
+  "crude_feeds": [
+    {
+      "name": "Crude_Grade_1",
+      "cost": 46.24,
+      "sulfur": 0.0382,
+      "octane": 93.7,
+      "max_avail": 13964.0
+    },
+    {
+      "name": "Crude_Grade_2",
+      "cost": 52.91,
+      "sulfur": 0.0195,
+      "octane": 83.6,
+      "max_avail": 7578.0
+    },
+    {
+      "name": "Crude_Grade_3",
+      "cost": 60.99,
+      "sulfur": 0.0252,
+      "octane": 93.3,
+      "max_avail": 3685.0
+    },
+    {
+      "name": "Crude_Grade_4",
+      "cost": 36.69,
+      "sulfur": 0.0297,
+      "octane": 97.0,
+      "max_avail": 4433.0
+    },
+    {
+      "name": "Crude_Grade_5",
+      "cost": 40.45,
+      "sulfur": 0.0098,
+      "octane": 86.9,
+      "max_avail": 14309.0
+    },
+    {
+      "name": "Crude_Grade_6",
+      "cost": 35.21,
+      "sulfur": 0.0039,
+      "octane": 90.4,
+      "max_avail": 4558.0
+    },
+    {
+      "name": "Crude_Grade_7",
+      "cost": 39.18,
+      "sulfur": 0.0138,
+      "octane": 87.9,
+      "max_avail": 2189.0
+    },
+    {
+      "name": "Crude_Grade_8",
+      "cost": 37.72,
+      "sulfur": 0.0259,
+      "octane": 88.1,
+      "max_avail": 3267.0
+    },
+    {
+      "name": "Crude_Grade_9",
+      "cost": 52.77,
+      "sulfur": 0.0047,
+      "octane": 91.7,
+      "max_avail": 13080.0
+    },
+    {
+      "name": "Crude_Grade_10",
+      "cost": 36.95,
+      "sulfur": 0.0381,
+      "octane": 97.5,
+      "max_avail": 10433.0
+    },
+    {
+      "name": "Crude_Grade_11",
+      "cost": 46.56,
+      "sulfur": 0.0036,
+      "octane": 85.7,
+      "max_avail": 8235.0
+    },
+    {
+      "name": "Crude_Grade_12",
+      "cost": 48.2,
+      "sulfur": 0.0075,
+      "octane": 89.9,
+      "max_avail": 14206.0
+    },
+    {
+      "name": "Crude_Grade_13",
+      "cost": 40.2,
+      "sulfur": 0.0175,
+      "octane": 84.9,
+      "max_avail": 9555.0
+    },
+    {
+      "name": "Crude_Grade_14",
+      "cost": 44.35,
+      "sulfur": 0.0222,
+      "octane": 90.7,
+      "max_avail": 9989.0
+    },
+    {
+      "name": "Crude_Grade_15",
+      "cost": 35.94,
+      "sulfur": 0.0342,
+      "octane": 89.2,
+      "max_avail": 6297.0
+    },
+    {
+      "name": "Crude_Grade_16",
+      "cost": 61.84,
+      "sulfur": 0.0251,
+      "octane": 96.7,
+      "max_avail": 14743.0
+    },
+    {
+      "name": "Crude_Grade_17",
+      "cost": 52.11,
+      "sulfur": 0.0223,
+      "octane": 97.4,
+      "max_avail": 9892.0
+    },
+    {
+      "name": "Crude_Grade_18",
+      "cost": 46.66,
+      "sulfur": 0.013,
+      "octane": 95.3,
+      "max_avail": 14185.0
+    },
+    {
+      "name": "Crude_Grade_19",
+      "cost": 63.96,
+      "sulfur": 0.0255,
+      "octane": 86.4,
+      "max_avail": 7276.0
+    },
+    {
+      "name": "Crude_Grade_20",
+      "cost": 59.07,
+      "sulfur": 0.0058,
+      "octane": 97.8,
+      "max_avail": 7463.0
+    },
+    {
+      "name": "Crude_Grade_21",
+      "cost": 46.85,
+      "sulfur": 0.0139,
+      "octane": 82.2,
+      "max_avail": 7618.0
+    },
+    {
+      "name": "Crude_Grade_22",
+      "cost": 56.21,
+      "sulfur": 0.03,
+      "octane": 94.3,
+      "max_avail": 7892.0
+    },
+    {
+      "name": "Crude_Grade_23",
+      "cost": 62.79,
+      "sulfur": 0.0271,
+      "octane": 96.6,
+      "max_avail": 10392.0
+    },
+    {
+      "name": "Crude_Grade_24",
+      "cost": 53.7,
+      "sulfur": 0.0152,
+      "octane": 83.0,
+      "max_avail": 4454.0
+    },
+    {
+      "name": "Crude_Grade_25",
+      "cost": 55.07,
+      "sulfur": 0.0276,
+      "octane": 91.5,
+      "max_avail": 12965.0
+    },
+    {
+      "name": "Crude_Grade_26",
+      "cost": 61.62,
+      "sulfur": 0.0205,
+      "octane": 83.9,
+      "max_avail": 12882.0
+    },
+    {
+      "name": "Crude_Grade_27",
+      "cost": 57.82,
+      "sulfur": 0.0238,
+      "octane": 94.3,
+      "max_avail": 11062.0
+    },
+    {
+      "name": "Crude_Grade_28",
+      "cost": 36.21,
+      "sulfur": 0.0293,
+      "octane": 83.8,
+      "max_avail": 9035.0
+    },
+    {
+      "name": "Crude_Grade_29",
+      "cost": 38.24,
+      "sulfur": 0.0042,
+      "octane": 92.2,
+      "max_avail": 10755.0
+    },
+    {
+      "name": "Crude_Grade_30",
+      "cost": 51.9,
+      "sulfur": 0.0287,
+      "octane": 84.2,
+      "max_avail": 8374.0
+    },
+    {
+      "name": "Crude_Grade_31",
+      "cost": 47.31,
+      "sulfur": 0.031,
+      "octane": 85.7,
+      "max_avail": 11914.0
+    },
+    {
+      "name": "Crude_Grade_32",
+      "cost": 55.84,
+      "sulfur": 0.0356,
+      "octane": 92.0,
+      "max_avail": 11789.0
+    },
+    {
+      "name": "Crude_Grade_33",
+      "cost": 54.0,
+      "sulfur": 0.0352,
+      "octane": 94.9,
+      "max_avail": 5627.0
+    },
+    {
+      "name": "Crude_Grade_34",
+      "cost": 47.5,
+      "sulfur": 0.0357,
+      "octane": 87.2,
+      "max_avail": 12230.0
+    },
+    {
+      "name": "Crude_Grade_35",
+      "cost": 61.88,
+      "sulfur": 0.0148,
+      "octane": 83.8,
+      "max_avail": 3306.0
+    },
+    {
+      "name": "Crude_Grade_36",
+      "cost": 47.81,
+      "sulfur": 0.0333,
+      "octane": 95.8,
+      "max_avail": 9526.0
+    },
+    {
+      "name": "Crude_Grade_37",
+      "cost": 39.94,
+      "sulfur": 0.0228,
+      "octane": 89.8,
+      "max_avail": 14971.0
+    },
+    {
+      "name": "Crude_Grade_38",
+      "cost": 42.32,
+      "sulfur": 0.0092,
+      "octane": 85.5,
+      "max_avail": 3495.0
+    },
+    {
+      "name": "Crude_Grade_39",
+      "cost": 56.09,
+      "sulfur": 0.0165,
+      "octane": 97.5,
+      "max_avail": 14851.0
+    },
+    {
+      "name": "Crude_Grade_40",
+      "cost": 42.41,
+      "sulfur": 0.0288,
+      "octane": 93.4,
+      "max_avail": 3636.0
+    }
+  ],
+  "products": [
+    {
+      "name": "Refined_Product_1",
+      "demand": 22082.0,
+      "max_sulfur": 0.0191,
+      "min_octane": 91.0
+    },
+    {
+      "name": "Refined_Product_2",
+      "demand": 18877.0,
+      "max_sulfur": 0.0105,
+      "min_octane": 89.8
+    },
+    {
+      "name": "Refined_Product_3",
+      "demand": 18949.0,
+      "max_sulfur": 0.0122,
+      "min_octane": 90.9
+    },
+    {
+      "name": "Refined_Product_4",
+      "demand": 10791.0,
+      "max_sulfur": 0.0183,
+      "min_octane": 91.7
+    },
+    {
+      "name": "Refined_Product_5",
+      "demand": 24894.0,
+      "max_sulfur": 0.0214,
+      "min_octane": 88.9
+    },
+    {
+      "name": "Refined_Product_6",
+      "demand": 9389.0,
+      "max_sulfur": 0.0155,
+      "min_octane": 92.1
+    },
+    {
+      "name": "Refined_Product_7",
+      "demand": 5197.0,
+      "max_sulfur": 0.016,
+      "min_octane": 93.5
+    },
+    {
+      "name": "Refined_Product_8",
+      "demand": 14339.0,
+      "max_sulfur": 0.0176,
+      "min_octane": 92.6
+    },
+    {
+      "name": "Refined_Product_9",
+      "demand": 22043.0,
+      "max_sulfur": 0.0149,
+      "min_octane": 88.8
+    },
+    {
+      "name": "Refined_Product_10",
+      "demand": 6986.0,
+      "max_sulfur": 0.0221,
+      "min_octane": 89.8
+    },
+    {
+      "name": "Refined_Product_11",
+      "demand": 6734.0,
+      "max_sulfur": 0.0126,
+      "min_octane": 92.5
+    },
+    {
+      "name": "Refined_Product_12",
+      "demand": 10759.0,
+      "max_sulfur": 0.0178,
+      "min_octane": 93.7
+    },
+    {
+      "name": "Refined_Product_13",
+      "demand": 6802.0,
+      "max_sulfur": 0.0151,
+      "min_octane": 87.9
+    },
+    {
+      "name": "Refined_Product_14",
+      "demand": 19486.0,
+      "max_sulfur": 0.0181,
+      "min_octane": 92.6
+    },
+    {
+      "name": "Refined_Product_15",
+      "demand": 21646.0,
+      "max_sulfur": 0.0199,
+      "min_octane": 93.5
+    }
+  ]
+}

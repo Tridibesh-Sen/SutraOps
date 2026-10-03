@@ -1,0 +1,179 @@
+{
+  "problem": "refinery_blend",
+  "name": "pan_india_petrochemical_refinery_stress",
+  "metadata": {
+    "description": "Pan-India Multi-Crude BS-VI Blending & Refinery Network Optimal Planning Model",
+    "refinery_complexes": [
+      "IOCL Paradip",
+      "HPCL Visakhapatnam",
+      "BPCL Kochi",
+      "IOCL Mathura",
+      "CPCL Manali"
+    ],
+    "compliance": "Bharat Stage VI (BS-VI) 10-PPM Sulfur & High-RON Mandate"
+  },
+  "crude_feeds": [
+    {
+      "name": "Arab_Super_Light",
+      "cost": 84.5,
+      "sulfur": 0.0008,
+      "octane": 94.0,
+      "max_avail": 95000
+    },
+    {
+      "name": "Arab_Light",
+      "cost": 78.2,
+      "sulfur": 0.0015,
+      "octane": 89.0,
+      "max_avail": 150000
+    },
+    {
+      "name": "Arab_Medium",
+      "cost": 72.8,
+      "sulfur": 0.0024,
+      "octane": 84.0,
+      "max_avail": 120000
+    },
+    {
+      "name": "Arab_Heavy",
+      "cost": 66.4,
+      "sulfur": 0.0038,
+      "octane": 79.0,
+      "max_avail": 110000
+    },
+    {
+      "name": "Brent_Crude_North_Sea",
+      "cost": 82.1,
+      "sulfur": 0.0004,
+      "octane": 92.5,
+      "max_avail": 100000
+    },
+    {
+      "name": "Urals_Export_Grade",
+      "cost": 69.5,
+      "sulfur": 0.0018,
+      "octane": 86.0,
+      "max_avail": 140000
+    },
+    {
+      "name": "Maya_Heavy_Sour",
+      "cost": 59.8,
+      "sulfur": 0.0042,
+      "octane": 76.0,
+      "max_avail": 80000
+    },
+    {
+      "name": "Murban_Abu_Dhabi",
+      "cost": 81.4,
+      "sulfur": 0.0007,
+      "octane": 91.0,
+      "max_avail": 110000
+    },
+    {
+      "name": "Bonny_Light_Nigeria",
+      "cost": 83.9,
+      "sulfur": 0.0003,
+      "octane": 93.0,
+      "max_avail": 90000
+    },
+    {
+      "name": "Basrah_Medium_Iraq",
+      "cost": 71.2,
+      "sulfur": 0.0028,
+      "octane": 82.5,
+      "max_avail": 130000
+    },
+    {
+      "name": "Basrah_Heavy_Iraq",
+      "cost": 64.3,
+      "sulfur": 0.0041,
+      "octane": 77.0,
+      "max_avail": 95000
+    },
+    {
+      "name": "Kuwait_Export_KEC",
+      "cost": 73.5,
+      "sulfur": 0.0026,
+      "octane": 83.5,
+      "max_avail": 85000
+    },
+    {
+      "name": "Mumbai_High_Domestic",
+      "cost": 76.0,
+      "sulfur": 0.0002,
+      "octane": 88.0,
+      "max_avail": 80000
+    },
+    {
+      "name": "Rajasthan_Mangala_Sweet",
+      "cost": 74.5,
+      "sulfur": 0.0002,
+      "octane": 86.5,
+      "max_avail": 75000
+    },
+    {
+      "name": "Dubai_Fateh",
+      "cost": 75.8,
+      "sulfur": 0.0021,
+      "octane": 85.0,
+      "max_avail": 90000
+    },
+    {
+      "name": "Sokol_Far_East",
+      "cost": 80.6,
+      "sulfur": 0.0005,
+      "octane": 90.5,
+      "max_avail": 85000
+    }
+  ],
+  "products": [
+    {
+      "name": "BS_VI_MS_91_Petrol",
+      "demand": 140000,
+      "max_sulfur": 0.001,
+      "min_octane": 91.0
+    },
+    {
+      "name": "BS_VI_MS_95_Speed_Petrol",
+      "demand": 65000,
+      "max_sulfur": 0.0008,
+      "min_octane": 93.5
+    },
+    {
+      "name": "BS_VI_High_Speed_Diesel",
+      "demand": 280000,
+      "max_sulfur": 0.0015,
+      "min_octane": 84.0
+    },
+    {
+      "name": "Aviation_Turbine_Fuel_JetA1",
+      "demand": 90000,
+      "max_sulfur": 0.0012,
+      "min_octane": 88.0
+    },
+    {
+      "name": "Petrochemical_Grade_Naphtha",
+      "demand": 110000,
+      "max_sulfur": 0.002,
+      "min_octane": 84.0
+    },
+    {
+      "name": "Industrial_LPG_Feedstock",
+      "demand": 85000,
+      "max_sulfur": 0.001,
+      "min_octane": 89.0
+    },
+    {
+      "name": "Low_Sulfur_Heavy_Stock_LSHS",
+      "demand": 70000,
+      "max_sulfur": 0.0035,
+      "min_octane": 78.0
+    },
+    {
+      "name": "Bitumen_Paving_Grade_VG30",
+      "demand": 50000,
+      "max_sulfur": 0.0045,
+      "min_octane": 75.0
+    }
+  ]
+}
