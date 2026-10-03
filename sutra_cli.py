@@ -75,7 +75,7 @@ def main():
             print(f"[*] GPU SpMV & Tensor-Core Acceleration ACTIVE (Mixed Precision: {args.precision})")
         engine = SutraOptEngine(use_gpu=args.gpu)
         print(f"[*] Ingesting model: {args.file}")
-        res = engine.solve_file(args.file)
+        res = engine.solve_file(args.file, gap_tol=args.gap)
 
         print("\n" + "=" * 60)
         print(f" SUTRA-OPT SOLVER REPORT: {res.topology.get('name', 'Model')}")

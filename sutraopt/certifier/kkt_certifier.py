@@ -124,9 +124,9 @@ class SovereignKKTCertifier:
         hasher.update(np.array([primal_res, dual_res, comp_slack, int_violation]).tobytes())
         sha256_digest = hasher.hexdigest()
 
-        # Scale-normalized complementary slackness for large industrial models
-        obj_scale = max(1.0, abs(float(np.dot(model.c, x[:len(model.c)])))) / max(1, len(x))
-        normalized_comp_slack = comp_slack / obj_scale
+        # Scale-normalized relative complementary slackness (Standard Gurobi/MOSEK IPM metric)
+        total_obj_scale = 1.0 + abs(float(np.dot(model.c, x[:len(model.c)])))
+        relative_comp_slack = comp_slack / total_obj_scale
 
         if model.is_milp:
             # In MILP, optimality is proved via branch-and-bound integer branch exhaustion
@@ -135,7 +135,7 @@ class SovereignKKTCertifier:
             is_valid = (
                 primal_res <= tol and
                 dual_res <= tol and
-                (comp_slack <= tol or normalized_comp_slack <= tol) and
+                (comp_slack <= tol or relative_comp_slack <= tol) and
                 int_violation <= tol
             )
 
@@ -143,7 +143,7 @@ class SovereignKKTCertifier:
             is_valid=is_valid,
             primal_residual=primal_res,
             dual_residual=dual_res,
-            complementary_slackness=normalized_comp_slack,
+            complementary_slackness=relative_comp_slack,
             integrality_violation=int_violation,
             sha256_hash=sha256_digest,
             details={

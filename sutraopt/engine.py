@@ -64,7 +64,7 @@ class SutraOptEngine:
         self.ipm_solver = SovereignInteriorPoint(use_gpu=use_gpu)
         self._cached_basis: Optional[np.ndarray] = None
 
-    def solve_file(self, filepath: str, use_warm_start: bool = False) -> SutraResult:
+    def solve_file(self, filepath: str, use_warm_start: bool = False, gap_tol: float = 1e-3) -> SutraResult:
         """Solves a file (.mps, .lp, .json, .yaml)."""
         if filepath.endswith(".mps") or filepath.endswith(".qps"):
             model = MPSParser.parse_file(filepath)
@@ -74,9 +74,9 @@ class SutraOptEngine:
         else:
             raise ValueError(f"Unsupported file format: {filepath}")
 
-        return self.solve_model(model, use_warm_start=use_warm_start)
+        return self.solve_model(model, use_warm_start=use_warm_start, gap_tol=gap_tol)
 
-    def solve_model(self, model: OptimizationModel, use_warm_start: bool = False) -> SutraResult:
+    def solve_model(self, model: OptimizationModel, use_warm_start: bool = False, gap_tol: float = 1e-3) -> SutraResult:
         start_time = time.perf_counter()
         topology = model.summarize()
 
@@ -136,7 +136,7 @@ class SutraOptEngine:
         elapsed = time.perf_counter() - start_time
 
         # 4. KKT Mathematical Certification
-        cert = SovereignKKTCertifier.verify(model, final_x, final_y, final_z)
+        cert = SovereignKKTCertifier.verify(model, final_x, final_y, final_z, tol=gap_tol)
 
         # 5. Build Variable Solution Dictionary
         sol_dict = {}
