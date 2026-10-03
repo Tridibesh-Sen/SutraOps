@@ -53,14 +53,15 @@ class SutraResult:
 class SutraOptEngine:
     """The master Sovereign Optimization Engine."""
 
-    def __init__(self, enable_presolve: bool = True, self_healing: bool = True):
+    def __init__(self, enable_presolve: bool = True, self_healing: bool = True, use_gpu: bool = False):
         self.enable_presolve = enable_presolve
         self.self_healing = self_healing
+        self.use_gpu = use_gpu
         self.presolver = SovereignPresolver()
         self.simplex = SovereignDualSimplex()
         self.milp_solver = SovereignBranchAndCut()
         from .ipm.interior_point import SovereignInteriorPoint
-        self.ipm_solver = SovereignInteriorPoint()
+        self.ipm_solver = SovereignInteriorPoint(use_gpu=use_gpu)
         self._cached_basis: Optional[np.ndarray] = None
 
     def solve_file(self, filepath: str, use_warm_start: bool = False) -> SutraResult:

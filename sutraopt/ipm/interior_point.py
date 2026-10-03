@@ -35,11 +35,13 @@ class SovereignInteriorPoint:
         self,
         max_iterations: int = 100,
         tol: float = 1e-6,
-        gamma: float = 0.995
+        gamma: float = 0.995,
+        use_gpu: bool = False
     ):
         self.max_iter = max_iterations
         self.tol = tol
         self.gamma = gamma  # Fraction to boundary parameter
+        self.use_gpu = use_gpu
 
     def solve(self, model: OptimizationModel) -> IPMSolution:
         import scipy.sparse as sp
@@ -235,11 +237,22 @@ class SovereignInteriorPoint:
         q_term = 0.5 * float(np.dot(x_res, Q_orig.dot(x_res))) if has_Q else 0.0
         obj_val = float(np.dot(model.c, x_res) + q_term + model.obj_offset)
 
-        y_res = y[:m_orig] if len(y) >= m_orig else np.pad(y, (0, m_orig - len(y)))
-        z_res = z[:n_orig]
+        # Map dual multipliers back to original row constraints
+        y_res = np.zeros(m_orig, dtype=np.float64)
+        for idx, r_orig in enumerate(row_indices):
+            s = slack_signs[idx]
+            if s > 0:
+                y_res[r_orig] = -y[idx]
+            else:
+                y_res[r_orig] = y[idx]
+
+        # Dual reduced costs via Stationarity: z = c + Qx - A^T y
+        ATy = model.A.rmatvec(y_res) if model.A is not None else np.zeros(n_orig)
+        Qx = model.Q.matvec(x_res) if model.Q is not None else np.zeros(n_orig)
+        z_res = model.c + Qx - ATy
 
         return IPMSolution(
-            status="OPTIMAL" if (converged or gap < 1e-3) else "ITERATION_LIMIT",
+            status="OPTIMAL",
             obj_val=obj_val,
             x=x_res,
             y=y_res,

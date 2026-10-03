@@ -7,9 +7,38 @@ Supports CUDA / CuPy / ROCm / OpenCL with SIMD OpenMP Parallel Fallback.
 
 import time
 import math
+import os
+import sys
 import importlib.util
 from typing import Dict, Any, Tuple, Optional
 import numpy as np
+
+# Auto-discover NVIDIA CUDA pip packages on Windows
+if sys.platform == "win32":
+    import site
+    try:
+        candidate_roots = site.getsitepackages()
+    except Exception:
+        candidate_roots = []
+    try:
+        user_site = site.getusersitepackages()
+        if user_site:
+            candidate_roots.append(user_site)
+    except Exception:
+        pass
+
+    for site_pkg in candidate_roots:
+        nvidia_base = os.path.join(site_pkg, "nvidia")
+        if os.path.isdir(nvidia_base):
+            for sub in os.listdir(nvidia_base):
+                bin_dir = os.path.join(nvidia_base, sub, "bin")
+                if os.path.isdir(bin_dir):
+                    try:
+                        os.add_dll_directory(bin_dir)
+                    except Exception:
+                        pass
+                    if bin_dir not in os.environ.get("PATH", ""):
+                        os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH", "")
 
 HAS_CUDA_GPU = False
 cp: Any = None
@@ -17,7 +46,8 @@ cp: Any = None
 try:
     if importlib.util.find_spec("cupy") is not None:
         cp = importlib.import_module("cupy")
-        HAS_CUDA_GPU = True
+        if cp.cuda.runtime.getDeviceCount() > 0:
+            HAS_CUDA_GPU = True
 except Exception:
     HAS_CUDA_GPU = False
     cp = None

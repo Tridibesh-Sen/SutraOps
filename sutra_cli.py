@@ -73,7 +73,7 @@ def main():
         print(f"[*] Compute Device: {dev_info['device_name']} [{dev_info['status']}]")
         if args.gpu:
             print(f"[*] GPU SpMV & Tensor-Core Acceleration ACTIVE (Mixed Precision: {args.precision})")
-        engine = SutraOptEngine()
+        engine = SutraOptEngine(use_gpu=args.gpu)
         print(f"[*] Ingesting model: {args.file}")
         res = engine.solve_file(args.file)
 
