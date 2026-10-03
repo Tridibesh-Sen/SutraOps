@@ -26,7 +26,7 @@ def main():
     solve_parser.add_argument("--precision", default="mixed", choices=["mixed", "fp64", "fp32"], help="Precision mode (mixed with FP64 refinement)")
     solve_parser.add_argument("--certify", action="store_true", help="Generate Markdown Certificate of Optimality")
     solve_parser.add_argument("--time-limit", type=float, default=None, help="Stop solve after N seconds")
-    solve_parser.add_argument("--gap", type=float, default=1e-4, help="MIP optimality gap tolerance (default: 1e-4)")
+    solve_parser.add_argument("--gap", type=float, default=1e-3, help="Optimality gap tolerance (default: 1e-3)")
     solve_parser.add_argument("--log-level", default="normal", choices=["quiet", "normal", "verbose"], help="Solver log verbosity")
     solve_parser.add_argument("--out", type=str, help="Save solution JSON to destination file")
 
