@@ -31,3 +31,7 @@ htmlcov/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Documentation / specs
+docx/
+*.docx
