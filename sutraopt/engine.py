@@ -88,7 +88,7 @@ class SutraOptEngine:
             active_model = model
 
         # 2. Intelligent Solver Dispatch
-        if active_model.is_qp:
+        if active_model.is_qp or active_model.num_cols >= 2000:
             ipm_res = self.ipm_solver.solve(active_model)
             status = ipm_res.status
             obj_val = ipm_res.obj_val

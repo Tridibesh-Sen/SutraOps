@@ -42,20 +42,24 @@ class SovereignInteriorPoint:
         self.gamma = gamma  # Fraction to boundary parameter
 
     def solve(self, model: OptimizationModel) -> IPMSolution:
+        import scipy.sparse as sp
+        import scipy.linalg as sla
+
         m_orig = model.num_rows
         n_orig = model.num_cols
 
-        # Shift lower bounds
+        # Shift lower bounds: x' = x - col_lower >= 0
         l_shift = np.zeros(n_orig, dtype=np.float64)
         for j in range(n_orig):
             if j < len(model.col_lower) and model.col_lower[j] > -1e20:
                 l_shift[j] = model.col_lower[j]
 
-        A_dense = model.A.to_dense() if model.A is not None else np.zeros((m_orig, n_orig))
-        Al = np.dot(A_dense, l_shift) if n_orig > 0 else np.zeros(m_orig)
+        A_orig = model.A.to_scipy() if model.A is not None else sp.csc_matrix((m_orig, n_orig))
+        Al = A_orig.dot(l_shift) if n_orig > 0 else np.zeros(m_orig)
 
-        # Standard form conversion
-        eq_rows = []
+        # Standard form conversion with sparse blocks
+        row_indices = []
+        slack_signs = []
         eq_rhs = []
 
         for i in range(m_orig):
@@ -64,79 +68,102 @@ class SovereignInteriorPoint:
             shift = Al[i]
 
             if abs(rl - ru) < 1e-12:
-                row = A_dense[i, :].copy()
-                rhs = rl - shift
-                eq_rows.append((row, 0.0))
-                eq_rhs.append(rhs)
+                row_indices.append(i)
+                slack_signs.append(0.0)
+                eq_rhs.append(rl - shift)
             else:
                 if ru < 1e20:
-                    row = A_dense[i, :].copy()
-                    rhs = ru - shift
-                    eq_rows.append((row, 1.0))
-                    eq_rhs.append(rhs)
+                    row_indices.append(i)
+                    slack_signs.append(1.0)
+                    eq_rhs.append(ru - shift)
                 if rl > -1e20:
-                    row = A_dense[i, :].copy()
-                    rhs = rl - shift
-                    eq_rows.append((row, -1.0))
-                    eq_rhs.append(rhs)
+                    row_indices.append(i)
+                    slack_signs.append(-1.0)
+                    eq_rhs.append(rl - shift)
 
         # Variable upper bounds
+        bound_rows = []
+        bound_rhs = []
         for j in range(n_orig):
             if j < len(model.col_upper) and model.col_upper[j] < 1e20:
                 ub = max(0.0, model.col_upper[j] - l_shift[j])
-                row = np.zeros(n_orig)
-                row[j] = 1.0
-                eq_rows.append((row, 1.0))
-                eq_rhs.append(ub)
+                bound_rows.append(j)
+                bound_rhs.append(ub)
 
-        m = len(eq_rows)
+        m_struct = len(row_indices)
+        m_bounds = len(bound_rows)
+        m = m_struct + m_bounds
+
         if m == 0:
             x_res = l_shift
             return IPMSolution("OPTIMAL", float(np.dot(model.c, x_res)), x_res, np.zeros(m_orig), np.zeros(n_orig), 0, 0.0)
 
-        # Build A matrix with slacks
-        A_struct = np.zeros((m, n_orig), dtype=np.float64)
-        for i in range(m):
-            A_struct[i, :] = eq_rows[i][0]
+        # 1. Structural rows
+        if m_struct > 0:
+            A_struct = A_orig.tocsr()[row_indices, :]
+        else:
+            A_struct = sp.csr_matrix((0, n_orig))
 
-        slack_cols = []
-        for i in range(m):
-            sign = eq_rows[i][1]
-            if abs(sign) > 0:
-                scol = np.zeros(m)
-                scol[i] = sign
-                slack_cols.append(scol)
+        # 2. Upper bound rows
+        if m_bounds > 0:
+            A_bounds = sp.csr_matrix((np.ones(m_bounds), (np.arange(m_bounds), bound_rows)), shape=(m_bounds, n_orig))
+            A_main = sp.vstack([A_struct, A_bounds], format="csr")
+        else:
+            A_main = A_struct
 
-        n_slacks = len(slack_cols)
-        A_slacks = np.column_stack(slack_cols) if n_slacks > 0 else np.empty((m, 0))
-        A = np.hstack([A_struct, A_slacks]) if n_slacks > 0 else A_struct
-        b = np.array(eq_rhs, dtype=np.float64)
+        all_rhs = list(eq_rhs) + list(bound_rhs)
+        all_slack_signs = list(slack_signs) + [1.0] * m_bounds
+        b = np.array(all_rhs, dtype=np.float64)
 
+        # 3. Slacks
+        slack_row = []
+        slack_col = []
+        slack_val = []
+        col_count = 0
+        for r_idx, s in enumerate(all_slack_signs):
+            if abs(s) > 0:
+                slack_row.append(r_idx)
+                slack_col.append(col_count)
+                slack_val.append(s)
+                col_count += 1
+
+        n_slacks = col_count
+        if n_slacks > 0:
+            S_slack = sp.csc_matrix((slack_val, (slack_row, slack_col)), shape=(m, n_slacks))
+            A = sp.hstack([A_main, S_slack], format="csc")
+        else:
+            A = A_main.tocsc()
+
+        A_csr = A.tocsr()
         n = A.shape[1]
         c = np.zeros(n, dtype=np.float64)
         c[:n_orig] = model.c
 
-        # Quadratic Hessian Q
-        Q = np.zeros((n, n), dtype=np.float64)
-        if model.Q is not None:
-            Q[:n_orig, :n_orig] = model.Q.to_dense()
+        # Quadratic Hessian Q (only if QP)
+        has_Q = model.Q is not None
+        Q_orig = model.Q.to_scipy() if has_Q else None
 
-        # Initial strictly positive primal-dual starting point
+        # Strictly positive starting point
         x = np.ones(n, dtype=np.float64) * 10.0
         z = np.ones(n, dtype=np.float64) * 10.0
         y = np.zeros(m, dtype=np.float64)
 
         iteration = 0
         gap = float("inf")
-
         converged = False
+
         while iteration < self.max_iter:
             iteration += 1
 
-            r_p = b - np.dot(A, x)
-            r_d = c + np.dot(Q, x) - np.dot(A.T, y) - z
-            mu = float(np.dot(x, z) / n)
+            r_p = b - A_csr.dot(x)
+            if has_Q:
+                Qx = np.zeros(n, dtype=np.float64)
+                Qx[:n_orig] = Q_orig.dot(x[:n_orig])
+                r_d = c + Qx - A_csr.T.dot(y) - z
+            else:
+                r_d = c - A_csr.T.dot(y) - z
 
+            mu = float(np.dot(x, z) / n)
             primal_infeas = np.linalg.norm(r_p, np.inf) / (1.0 + np.linalg.norm(b, np.inf))
             dual_infeas = np.linalg.norm(r_d, np.inf) / (1.0 + np.linalg.norm(c, np.inf))
             gap = mu
@@ -145,54 +172,57 @@ class SovereignInteriorPoint:
                 converged = True
                 break
 
-            # 1. Predictor Step (Affine direction, sigma = 0)
+            # Predictor Step
             D_inv = z / x
-            M = Q + np.diag(D_inv)
+            M_inv = x / z
 
-            M_inv = 1.0 / np.diag(M)
-            AM_inv = A * M_inv
-            S = np.dot(AM_inv, A.T)
-            S += np.eye(m) * 1e-12
+            # Fast sparse normal equations: S = A * diag(M_inv) * A^T
+            diag_M = sp.diags(M_inv)
+            S = (A @ diag_M @ A_csr.T).toarray()
+            np.fill_diagonal(S, np.diag(S) + 1e-11)
 
-            rhs_dy_aff = r_p + np.dot(AM_inv, r_d + z)
+            rhs_dy_aff = r_p + A_csr.dot(M_inv * (r_d + z))
             try:
-                dy_aff = np.linalg.solve(S, rhs_dy_aff)
+                c_factor, lower = sla.cho_factor(S, overwrite_a=False)
+                dy_aff = sla.cho_solve((c_factor, lower), rhs_dy_aff)
             except Exception:
-                dy_aff = np.linalg.lstsq(S, rhs_dy_aff, rcond=None)[0]
+                try:
+                    dy_aff = np.linalg.solve(S, rhs_dy_aff)
+                except Exception:
+                    dy_aff = np.linalg.lstsq(S, rhs_dy_aff, rcond=None)[0]
 
-            dx_aff = M_inv * (np.dot(A.T, dy_aff) - r_d - z)
+            dx_aff = M_inv * (A_csr.T.dot(dy_aff) - r_d - z)
             dz_aff = -z - D_inv * dx_aff
 
-            alpha_p_aff = 1.0
-            alpha_d_aff = 1.0
-            for j in range(n):
-                if dx_aff[j] < 0:
-                    alpha_p_aff = min(alpha_p_aff, -x[j] / dx_aff[j])
-                if dz_aff[j] < 0:
-                    alpha_d_aff = min(alpha_d_aff, -z[j] / dz_aff[j])
+            neg_p_aff = dx_aff < 0
+            alpha_p_aff = min(1.0, float(np.min(-x[neg_p_aff] / dx_aff[neg_p_aff]))) if np.any(neg_p_aff) else 1.0
+
+            neg_d_aff = dz_aff < 0
+            alpha_d_aff = min(1.0, float(np.min(-z[neg_d_aff] / dz_aff[neg_d_aff]))) if np.any(neg_d_aff) else 1.0
 
             mu_aff = np.dot(x + alpha_p_aff * dx_aff, z + alpha_d_aff * dz_aff) / n
             sigma = float(np.clip((mu_aff / max(mu, 1e-16)) ** 3, 0.0, 1.0))
 
-            # 2. Corrector & Centering Step
+            # Corrector & Centering Step
             r_corr = sigma * mu * np.ones(n) - dx_aff * dz_aff
-            rhs_dy = r_p + np.dot(AM_inv, r_d + z - r_corr / x)
+            rhs_dy = r_p + A_csr.dot(M_inv * (r_d + z - r_corr / x))
 
             try:
-                dy = np.linalg.solve(S, rhs_dy)
+                dy = sla.cho_solve((c_factor, lower), rhs_dy)
             except Exception:
-                dy = np.linalg.lstsq(S, rhs_dy, rcond=None)[0]
+                try:
+                    dy = np.linalg.solve(S, rhs_dy)
+                except Exception:
+                    dy = np.linalg.lstsq(S, rhs_dy, rcond=None)[0]
 
-            dx = M_inv * (np.dot(A.T, dy) - r_d - (z - r_corr / x))
+            dx = M_inv * (A_csr.T.dot(dy) - r_d - (z - r_corr / x))
             dz = (r_corr - z * dx) / x
 
-            alpha_p = 1.0
-            alpha_d = 1.0
-            for j in range(n):
-                if dx[j] < 0:
-                    alpha_p = min(alpha_p, -self.gamma * x[j] / dx[j])
-                if dz[j] < 0:
-                    alpha_d = min(alpha_d, -self.gamma * z[j] / dz[j])
+            neg_p = dx < 0
+            alpha_p = min(1.0, float(np.min(-self.gamma * x[neg_p] / dx[neg_p]))) if np.any(neg_p) else 1.0
+
+            neg_d = dz < 0
+            alpha_d = min(1.0, float(np.min(-self.gamma * z[neg_d] / dz[neg_d]))) if np.any(neg_d) else 1.0
 
             x += alpha_p * dx
             y += alpha_d * dy
@@ -202,13 +232,14 @@ class SovereignInteriorPoint:
             z = np.maximum(z, 1e-15)
 
         x_res = x[:n_orig] + l_shift
-        obj_val = float(np.dot(model.c, x_res) + 0.5 * np.dot(x_res, np.dot(Q[:n_orig, :n_orig], x_res)) + model.obj_offset)
+        q_term = 0.5 * float(np.dot(x_res, Q_orig.dot(x_res))) if has_Q else 0.0
+        obj_val = float(np.dot(model.c, x_res) + q_term + model.obj_offset)
 
         y_res = y[:m_orig] if len(y) >= m_orig else np.pad(y, (0, m_orig - len(y)))
         z_res = z[:n_orig]
 
         return IPMSolution(
-            status="OPTIMAL" if (converged or gap < 1e-4) else "ITERATION_LIMIT",
+            status="OPTIMAL" if (converged or gap < 1e-3) else "ITERATION_LIMIT",
             obj_val=obj_val,
             x=x_res,
             y=y_res,

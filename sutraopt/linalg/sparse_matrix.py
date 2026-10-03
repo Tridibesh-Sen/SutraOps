@@ -172,6 +172,11 @@ class CSCMatrix:
                 dense[r, j] = self.values[idx]
         return dense
 
+    def to_scipy(self):
+        """Converts to scipy.sparse.csc_matrix for high performance operations."""
+        import scipy.sparse as sp
+        return sp.csc_matrix((self.values, self.row_idx, self.col_ptr), shape=(self.nrows, self.ncols))
+
 
 @dataclass
 class CSRMatrix:

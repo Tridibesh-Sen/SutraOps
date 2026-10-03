@@ -307,21 +307,27 @@ class GPULinearAlgebraEngine:
             except Exception:
                 pass
 
+        L_cpu = L if not hasattr(L, 'get') else L.get()
+        U_cpu = U if not hasattr(U, 'get') else U.get()
+        Pb = rhs[p_perm]
+
         try:
-            L_cpu = L if not hasattr(L, 'get') else L.get()
-            U_cpu = U if not hasattr(U, 'get') else U.get()
-            Pb = rhs[p_perm]
             y = sla.solve_triangular(L_cpu, Pb, lower=True)
             return sla.solve_triangular(U_cpu, y, lower=False)
         except Exception:
             try:
-                L_cpu = L if not hasattr(L, 'get') else L.get()
-                U_cpu = U if not hasattr(U, 'get') else U.get()
-                P_mat = np.eye(len(p_perm))[p_perm]
-                B_approx = P_mat.T @ L_cpu @ U_cpu
-                return np.linalg.pinv(B_approx) @ rhs
+                # Fast diagonal regularization to avoid singular diagonal zero
+                L_reg = np.array(L_cpu, copy=True)
+                U_reg = np.array(U_cpu, copy=True)
+                np.fill_diagonal(L_reg, np.where(np.abs(np.diag(L_reg)) < 1e-12, 1.0, np.diag(L_reg)))
+                np.fill_diagonal(U_reg, np.where(np.abs(np.diag(U_reg)) < 1e-12, 1e-12, np.diag(U_reg)))
+                y = sla.solve_triangular(L_reg, Pb, lower=True)
+                return sla.solve_triangular(U_reg, y, lower=False)
             except Exception:
-                return np.zeros_like(rhs)
+                try:
+                    return sla.lstsq(U_cpu, sla.lstsq(L_cpu, Pb)[0])[0]
+                except Exception:
+                    return np.zeros_like(rhs)
 
     def gpu_btran(
         self,
@@ -348,9 +354,10 @@ class GPULinearAlgebraEngine:
             except Exception:
                 pass
 
+        U_cpu = U if not hasattr(U, 'get') else U.get()
+        L_cpu = L if not hasattr(L, 'get') else L.get()
+
         try:
-            U_cpu = U if not hasattr(U, 'get') else U.get()
-            L_cpu = L if not hasattr(L, 'get') else L.get()
             v = sla.solve_triangular(U_cpu, rhs, trans='T', lower=False)
             w = sla.solve_triangular(L_cpu, v, trans='T', lower=True)
             out = np.empty_like(w)
@@ -358,11 +365,15 @@ class GPULinearAlgebraEngine:
             return out
         except Exception:
             try:
-                L_cpu = L if not hasattr(L, 'get') else L.get()
-                U_cpu = U if not hasattr(U, 'get') else U.get()
-                P_mat = np.eye(len(p_perm))[p_perm]
-                B_approx = P_mat.T @ L_cpu @ U_cpu
-                return (rhs.T @ np.linalg.pinv(B_approx)).flatten()
+                L_reg = np.array(L_cpu, copy=True)
+                U_reg = np.array(U_cpu, copy=True)
+                np.fill_diagonal(L_reg, np.where(np.abs(np.diag(L_reg)) < 1e-12, 1.0, np.diag(L_reg)))
+                np.fill_diagonal(U_reg, np.where(np.abs(np.diag(U_reg)) < 1e-12, 1e-12, np.diag(U_reg)))
+                v = sla.solve_triangular(U_reg, rhs, trans='T', lower=False)
+                w = sla.solve_triangular(L_reg, v, trans='T', lower=True)
+                out = np.empty_like(w)
+                out[p_perm] = w
+                return out
             except Exception:
                 return np.zeros_like(rhs)
 
